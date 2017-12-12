@@ -288,6 +288,19 @@ class BIP32Key(object):
         vh160 = addressversion + self.Identifier()
         return Base58.check_encode(vh160)
 
+    def P2WPKHoP2SHAddress(self):
+        "Return P2WPKH over P2SH segwit address"
+        pk_bytes = self.PublicKey()
+        assert len(pk_bytes) == 33 and (pk_bytes.startswith(b"\x02") or pk_bytes.startswith(b"\x03")), \
+            "Only compressed public keys are compatible with p2sh-p2wpkh addresses. " \
+            "See https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki."
+        pk_hash = hashlib.new('ripemd160', sha256(pk_bytes).digest()).digest()
+        push_20 = bytes.fromhex('0014')
+        script_sig = push_20 + pk_hash
+        address_bytes = hashlib.new('ripemd160', sha256(script_sig).digest()).digest()
+        prefix = b"\xc4" if self.testnet else b"\x04"
+        return Base58.check_encode(prefix + address_bytes)
+
 
     def WalletImportFormat(self):
         "Returns private key encoded for wallet import"
