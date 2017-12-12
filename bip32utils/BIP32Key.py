@@ -23,10 +23,10 @@ CURVE_GEN       = ecdsa.ecdsa.generator_secp256k1
 CURVE_ORDER     = CURVE_GEN.order()
 FIELD_ORDER     = SECP256k1.curve.p()
 INFINITY        = ecdsa.ellipticcurve.INFINITY
-EX_MAIN_PRIVATE = codecs.decode('0488ade4', 'hex') # Version string for mainnet extended private keys
-EX_MAIN_PUBLIC  = codecs.decode('0488b21e', 'hex') # Version string for mainnet extended public keys
-EX_TEST_PRIVATE = codecs.decode('04358394', 'hex') # Version string for testnet extended private keys
-EX_TEST_PUBLIC  = codecs.decode('043587CF', 'hex') # Version string for testnet extended public keys
+EX_MAIN_PRIVATE = [ codecs.decode('0488ade4', 'hex') ] # Version strings for mainnet extended private keys
+EX_MAIN_PUBLIC  = [ codecs.decode('0488b21e', 'hex'), codecs.decode('049d7cb2'), 'hex' ] # Version strings for mainnet extended public keys
+EX_TEST_PRIVATE = [ codecs.decode('04358394', 'hex') ] # Version strings for testnet extended private keys
+EX_TEST_PUBLIC  = [ codecs.decode('043587CF', 'hex') ] # Version strings for testnet extended public keys
 
 class BIP32Key(object):
 
@@ -62,16 +62,16 @@ class BIP32Key(object):
 
         # Verify address version/type
         version = raw[:4]
-        if version == EX_MAIN_PRIVATE:
+        if version in EX_MAIN_PRIVATE:
             is_testnet = False
             is_pubkey = False
-        elif version == EX_TEST_PRIVATE:
+        elif version in EX_TEST_PRIVATE:
             is_testnet = True
             is_pubkey = False
-        elif version == EX_MAIN_PUBLIC:
+        elif version in EX_MAIN_PUBLIC:
             is_testnet = False
             is_pubkey = True
-        elif version == EX_TEST_PUBLIC:
+        elif version in EX_TEST_PUBLIC:
             is_testnet = True
             is_pubkey = True
         else:
@@ -303,9 +303,9 @@ class BIP32Key(object):
         if self.public is True and private is True:
             raise Exception("Cannot export an extended private key from a public-only deterministic key")
         if not self.testnet:
-            version = EX_MAIN_PRIVATE if private else EX_MAIN_PUBLIC
+            version = EX_MAIN_PRIVATE[0] if private else EX_MAIN_PUBLIC[0]
         else:
-            version = EX_TEST_PRIVATE if private else EX_TEST_PUBLIC
+            version = EX_TEST_PRIVATE[0] if private else EX_TEST_PUBLIC[0]
         depth = bytes(bytearray([self.depth]))
         fpr = self.parent_fpr
         child = struct.pack('>L', self.index)
