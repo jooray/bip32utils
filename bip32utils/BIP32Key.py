@@ -298,7 +298,7 @@ class BIP32Key(object):
         push_20 = bytes.fromhex('0014')
         script_sig = push_20 + pk_hash
         address_bytes = hashlib.new('ripemd160', sha256(script_sig).digest()).digest()
-        prefix = b"\xc4" if self.testnet else b"\x04"
+        prefix = b"\xc4" if self.testnet else b"\x05"
         return Base58.check_encode(prefix + address_bytes)
 
 
